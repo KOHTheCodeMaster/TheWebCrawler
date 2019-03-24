@@ -2,17 +2,50 @@ import java.util.ArrayList;
 
 public class Main {
 
-    Scraper scraper;
-    ArrayList<String> fileNames;
-    ArrayList<VideoTracker> videoTrackers;
+    private String basePath;
+    private String url;
+    private Scraper scraper;
+    private ArrayList<String> fileNames;
+    private ArrayList<VideoTracker> videoTrackers;
 
     Main() {
-        scraper = new Scraper();
+//        scraper = new Scraper();
         videoTrackers = new ArrayList<>();
         fileNames = new ArrayList<>();
 
         initializeFileNames();
 
+    }
+
+    private static void complete() {
+
+        String basePath = "I:\\0\\LinkedIn Learning\\Gradle For Java Developers";
+        String url = "https://www.linkedin.com/learning/gradle-for-java-developers";
+
+        UpdateLLDir obj = new UpdateLLDir(basePath, url);
+        obj.displayVideoNameList();
+        obj.displayFileNameList();
+        obj.updateFileNames();
+
+
+    }
+
+    public static void main(String[] args) {
+
+
+        complete();
+
+/*
+        obj.scraper.scrapLinkedInLearningPlaylist(url, obj.videoTrackers);
+
+        boolean ans = checkVideoExists(obj.fileNames, obj.videoTrackers);
+
+        System.out.println(obj.videoTrackers + "\n");*/
+
+    }
+
+    private static boolean checkVideoExists(ArrayList<String> fileNames, ArrayList<VideoTracker> videoTrackers) {
+        return false;
     }
 
     private void initializeFileNames() {
@@ -21,15 +54,13 @@ public class Main {
         fileNames.add("The purpose of Gradle");
     }
 
-    public static void main(String[] args) {
-
-        String url = "https://www.linkedin.com/learning/gradle-for-java-developers";
-
-        Main obj = new Main();
-        obj.scraper.scrapLinkedInLearningPlaylist(url, obj.videoTrackers);
-
-        System.out.println(obj.videoTrackers + "\n");
-
-    }
-
 }
+
+/*
+ * Time Stamp: 21st March
+ *
+ */
+
+
+
+

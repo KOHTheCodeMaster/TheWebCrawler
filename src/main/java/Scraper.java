@@ -8,20 +8,41 @@ import java.util.ArrayList;
 
 public class Scraper {
 
-    private boolean scrapLinkedInLearning(String url) {
+    private String url;
+    private ArrayList<VideoTracker> videoList;
 
-//        String url = "https://www.linkedin.com/learning/gradle-for-java-developers";
-
-        if (!url.startsWith("https://www.linkedin.com/")) {
-            System.out.println("URL doesn't belongs to LinkedInLearning Playlist!");
-            return false;
-        }
-
-        scrapLinkedInLearningPlaylist(url);
-        return true;
+    public Scraper(String url) {
+        this.url = url;
+        this.videoList = new ArrayList<>();
     }
 
-    boolean scrapLinkedInLearningPlaylist(String url, ArrayList<VideoTracker> videoList) {
+    public static boolean validateLinkedInLearningUrl(String url) {
+        if (url.startsWith("https://www.linkedin.com/"))
+            return true;
+
+        System.out.println("URL doesn't belongs to LinkedInLearning Playlist!");
+        System.exit(-105);
+        return false;
+    }
+
+    public static void main(String[] args) throws IOException {
+
+//        majorScrap("a");
+        String url = "https://www.linkedin.com/learning/gradle-for-java-developers";
+        new Scraper(url).majorScrap();
+
+    }
+
+    boolean scrapLinkedInLearning() {
+
+//        String url = "https://www.linkedin.com/learning/gradle-for-java-developers";
+        validateLinkedInLearningUrl(this.url);
+
+//        this.videoList = scrapLinkedInLearningPlaylist(url);
+        return scrapLinkedInLearningPlaylist(url, this.videoList);
+    }
+
+    private boolean scrapLinkedInLearningPlaylist(String url, ArrayList<VideoTracker> videoList) {
         /*
             Time Stamp: 21st March 2K19, 12:04 PM..!!
 
@@ -50,6 +71,7 @@ public class Scraper {
             System.out.println("Connection Established Successfully.");
 
         } catch (IOException e) {
+            System.out.println("Connection Failed.");
             e.printStackTrace();
             return false;
         }
@@ -122,6 +144,7 @@ public class Scraper {
             System.out.println("Connection Established Successfully.");
 
         } catch (IOException e) {
+            System.out.println("Connection Failed.");
             e.printStackTrace();
             return null;
         }
@@ -132,7 +155,7 @@ public class Scraper {
         final String htmlTagVideoName = "div.toc__sublist__item__content__title";
         final String htmlTagTimeLength = "div.toc__sublist__item__content__length";
 
-        ArrayList<VideoTracker> videoList = new ArrayList<>();
+        videoList = new ArrayList<>();
 
         //  Instantiating Lists for keeping track of name, time length & serial number of each video.
         ArrayList<String> videoNameList = new ArrayList<>();
@@ -153,6 +176,7 @@ public class Scraper {
             videoNameList.add(element.text());
             serialNumberList.add(count);
         }
+
         //  Extract Time Length for each video & add 'em to the timeLengthList.
         for (Element element : htmlTimeLength) {
             timeLengthList.add(element.text());
@@ -166,17 +190,22 @@ public class Scraper {
         return videoList;
     }
 
-    public static void main(String[] args) throws IOException {
+    void majorScrap() {
 
-        String url = "https://www.linkedin.com/learning/gradle-for-java-developers";
+//        String url = "https://www.linkedin.com/learning/gradle-for-java-developers";
 //        String url = "https://www.youtube.com/playlist?list=PLoJSah60cTP5Hulr9HxLyv-JVXFZycdmw";
 
-        Scraper scraper = new Scraper();
-
-        System.out.println(scraper.scrapLinkedInLearning(url));
+        boolean b = this.scrapLinkedInLearning();
+        if (!b)
+            System.out.println("Invalid URL...");
+//        else
+//            System.out.println(this.videoList);
 
     }
 
+    public ArrayList<VideoTracker> getVideoList() {
+        return videoList;
+    }
 }
 
 /*
