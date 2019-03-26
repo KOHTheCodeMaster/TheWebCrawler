@@ -16,13 +16,11 @@ public class Scraper {
         this.videoList = new ArrayList<>();
     }
 
-    public static boolean validateLinkedInLearningUrl(String url) {
-        if (url.startsWith("https://www.linkedin.com/"))
-            return true;
+    static boolean validateLinkedInLearningUrl(String url) {
+        return url.startsWith("https://www.linkedin.com/");
 
-        System.out.println("URL doesn't belongs to LinkedInLearning Playlist!");
-        System.exit(-105);
-        return false;
+//        System.out.println("URL doesn't belongs to LinkedInLearning Playlist!");
+//        System.exit(-105);
     }
 
     public static void main(String[] args) throws IOException {
@@ -36,7 +34,9 @@ public class Scraper {
     boolean scrapLinkedInLearning() {
 
 //        String url = "https://www.linkedin.com/learning/gradle-for-java-developers";
-        validateLinkedInLearningUrl(this.url);
+        boolean success = validateLinkedInLearningUrl(this.url);
+        if (!success)
+            return false;
 
 //        this.videoList = scrapLinkedInLearningPlaylist(url);
         return scrapLinkedInLearningPlaylist(url, this.videoList);
