@@ -1,17 +1,16 @@
 import java.io.File;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class UpdateLLDir {
+public class PlaylistSorter {
 
     private String basePath;
     private String url;
     private ArrayList<File> fileList;
     private ArrayList<VideoTracker> videoTrackers;
     int fileCount;
+    private String urlCategory;
 
-    UpdateLLDir(String basePath, String url) {
+    PlaylistSorter(String basePath, String url) {
         this.basePath = basePath;
         this.url = url;
         this.fileCount = 0;
@@ -19,38 +18,46 @@ public class UpdateLLDir {
         videoTrackers = new ArrayList<>();
         fileList = new ArrayList<>();
 
-        verifyAttributes();
+        validateBasePath();
+        initializeUrlCategory();
 
         initializeFileNames();
         initializeVideoTrackers();
         verifyCount();
     }
 
-    private void verifyAttributes() {
+    private void validateBasePath() {
 
-        boolean success = validateBasePath();
-        if (!success) {
+        //  Validate basePath
+        File file = new File(this.basePath);
+        boolean isValidBasePath = (file.isDirectory() && file.exists());
+
+        if (!isValidBasePath) {
             System.out.println("Invalid Base Path...");
-            System.exit(-104);
+            System.exit(-201);
         }
-        //  url is verified by scraper.
-        /*
-        success = Scraper.validateLinkedInLearningUrl(this.url);
-        if (!success) {
-            System.out.println("Invalid URL...");
-            System.exit(-105);
-        }*/
 
     }
 
-    private boolean validateBasePath() {
-        return (new File(this.basePath).isDirectory());
+    private void initializeUrlCategory() {
+
+        //  Initialize urlCategory on the basis of initial substring of the url
+        this.urlCategory = Scraper.extractUrlCategory(this.url);
+
+        if (this.urlCategory == null) {
+            System.out.println("Not a Valid Youtube/LinkedInLearning URL");
+            System.exit(-202);
+        }
     }
 
     private void initializeFileNames() {
 
         File[] files = new File(this.basePath).listFiles();
 
+        if (files == null) {
+            System.out.println("No Files Found in source dir.");
+            System.exit(-203);
+        }
 //        assert files != null;
         for (File f : files) {
             if (f.isFile()) {
@@ -63,29 +70,13 @@ public class UpdateLLDir {
 
     private void initializeVideoTrackers() {
 
-        Scraper scraper = new Scraper(this.url);
-        boolean success = scraper.scrapLinkedInLearning();
-        if (success)
-            this.videoTrackers = scraper.getVideoList();
+        Scraper scraper = new Scraper(this.url, this.urlCategory);
+
+        boolean scrappingSuccessful = scraper.scrapPlaylist();
+        if (scrappingSuccessful) this.videoTrackers = scraper.getVideoList();
         else {
             System.out.println("Invalid LinkedIn Learning URL...");
-            System.exit(-103);
-        }
-
-    }
-
-    public void displayVideoNameList() {
-
-        for (VideoTracker v : videoTrackers) {
-            System.out.println(v.getVideoName());
-        }
-
-    }
-
-    public void displayFileNameList() {
-
-        for (File f : fileList) {
-            System.out.println(f.getName());
+            System.exit(-205);
         }
 
     }
@@ -94,8 +85,10 @@ public class UpdateLLDir {
         boolean isSizeEqual = (videoTrackers.size() == fileList.size());
 
         if (!isSizeEqual) {
+            System.out.println("Video Trackers : " + videoTrackers.size());
+            System.out.println("FileList : " + fileList.size());
             System.out.println("Files count of BasePath Directory doesn't matches with the playlist.");
-            System.exit(-107);
+            System.exit(-206);
         }
     }
 
@@ -103,13 +96,14 @@ public class UpdateLLDir {
 
         for (VideoTracker v : videoTrackers) {
 
+            String scrapedFName = v.getVideoName();
+            scrapedFName = replaceSpecialCharsWithHyphen(scrapedFName);
+
             for (File currentFile : fileList) {
                 String currentFileName = currentFile.getName();
-                String scrapedFName = v.getVideoName();
 
-                //  Trim off all the special chars. including '-' from the currentFileName, scrapedFName.
-                currentFileName = fixFName(currentFileName);
-                scrapedFName = fixFName(scrapedFName);
+                //  Replace specific special chars. with '-'
+                currentFileName = replaceSpecialCharsWithHyphen(currentFileName);
 
                 /*
                     Match the currentFileName with the scrapedFName & when matched then
@@ -117,11 +111,14 @@ public class UpdateLLDir {
                     serialNumber. scrapedFName .extension
                  */
                 if (currentFileName.contains(scrapedFName)) {
-                    String updatedFName = fixFileName(currentFileName, scrapedFName, v.getSerialNumber());
-                    boolean renamedSuccessfully = currentFile.renameTo(new File(basePath + "/" + updatedFName));
+                    String updatedFName = acquireCorrectFileName(v.getSerialNumber(),
+                            scrapedFName, currentFileName);
+                    boolean renamedSuccessfully = currentFile.renameTo(
+                            new File(basePath + "/" + updatedFName));
                     if (!renamedSuccessfully) {
-                        System.out.println("Renaming Failed...");
-                        System.exit(-108);
+//                        System.out.println("Renaming Failed...");
+//                        System.exit(-207);
+                        return false;
                     }
                     break;
                 }
@@ -131,11 +128,20 @@ public class UpdateLLDir {
         return true;
     }
 
-    private String fixFileName(String currentFileName, String correctFName, int serialNumber) {
+    private String replaceSpecialCharsWithHyphen(String fName) {
+
+        String updatedFName = "";
+//        String regexSpecialSymbolFilter = "[\\-/\\\\:\"?<>*|]";
+        String regexSpecialSymbolFilter = "[/\\\\:\"?<>*|]";
+        updatedFName = fName.replaceAll(regexSpecialSymbolFilter, "");
+        return updatedFName;
+    }
+
+    private String acquireCorrectFileName(int serialNumber, String scrapedFName, String currentFileName) {
         String result;
 
         result = serialNumber + ". ";
-        result += correctFName;
+        result += scrapedFName;
         String extension = extractExtension(currentFileName);
         result += extension;
 
@@ -149,7 +155,10 @@ public class UpdateLLDir {
         return currentFileName.substring(currentFileName.lastIndexOf("."));
     }
 
-    private String fixFName(String fName) {
+/*
+    //    deprecated & slow approach for fixing file names,
+    //    alternative & faster approach has already been implemented above
+    private String fixFName2(String fName) {
 
         String updatedFName = "";
         String regexSpecialSymbolFilter = "[\\-/\\\\:\"?<>*|]";
@@ -183,6 +192,8 @@ public class UpdateLLDir {
         }
         return scrapedFName;
     }
+
+*/
 
 }
 

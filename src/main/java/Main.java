@@ -1,84 +1,46 @@
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
 
-    private static void sortMultipleLLDirs(ArrayList<File> rootDir, ArrayList<String> urlList) {
-        int totalFileCount = 0;
-        for (File f : rootDir) {
-            int i = 0;
-            if (!f.isDirectory()) {
-                System.out.println(f.getName() + " ain't a directory!\nContinuing with the next dir.");
-                continue;
-            }
+    public static void main(String[] args) {
 
-            String basePath = f.getAbsolutePath();
-            String url = urlList.get(i++);
-
-            UpdateLLDir obj = new UpdateLLDir(basePath, url);
-            boolean success = obj.updateFileNames();
-            if (success) {
-                System.out.println(f.getName() + " Updated Successfully. [" + obj.fileCount + " Files]");
-                totalFileCount += obj.fileCount;
-            }
-
-        }
-
-        System.out.println("\n-------------------------------");
-        System.out.println("Total LinkedIn Learning Playlist Directories Updated: " + rootDir.size());
-        System.out.println("Total Files Updated: " + totalFileCount);
+        Main obj = new Main();
+        obj.major();
     }
+
+    private void major() {
+
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Enter Youtube / LinkedIn Learning Playlist Directory Path: ");
+        String basePath = scanner.nextLine();
+        System.out.println("Enter Youtube / LinkedIn Learning Playlist URL: ");
+        String url = scanner.nextLine();
+
+        sortSingleDir(basePath, url);
+
+    }
+
+    private void sortSingleDir(String basePath, String url) {
+
+        PlaylistSorter obj = new PlaylistSorter(basePath, url);
+        boolean isDirUpdated = obj.updateFileNames();
+
+        if (isDirUpdated) {
+            System.out.println("Updated [" + obj.fileCount + "] File Names.");
+            System.out.println(basePath + " Sorted successfully.");
+        } else {
+            System.out.println("Renaming Failed...");
+            System.exit(-207);
+        }
+    }
+
+/*
 
     private static void complete2() {
 
-        Scanner scanner = new Scanner(System.in);
-        ArrayList<File> dirList = new ArrayList<>();
-        ArrayList<String> urlList = new ArrayList<>();
-
-        System.out.println("Enter LinkedIn Learning Playlist Root Directory Path: ");
-        String rootPath = scanner.nextLine();
-        System.out.println("Enter File Path that contains LinkedIn Learning Playlist URLs: ");
-        String urlFilePath = scanner.nextLine();
-
-
-        dirList = initializeDirList(rootPath);
-        System.out.println(dirList);
-        urlList = initializeUrlList(urlFilePath);
-        System.out.println(urlList);
-
-        sortMultipleLLDirs(dirList, urlList);
-
-    }
-
-    private static ArrayList<String> initializeUrlList(String urlFilePath) {
-
-        File f = new File(urlFilePath);
-        ArrayList<String> urlList = new ArrayList<>();
-        /*if(f.isFile()){
-            try (FileReader fileReader = new FileReader(f)){
-
-                String temp = "";
-                while (fileReader.ready()) {
-
-                int i = fileReader.read();
-                if((char) i == '\n'){
-                    urlList.add(temp);
-                    temp = "";
-                    continue;
-                }
-                    temp += (char) i;
-                    i = fileReader.read();
-                    System.out.println("t: " + temp);
-                }
-
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }*/
-        return urlList;
+        Helper helper = new Helper();
+        helper.begin();
     }
 
     private static ArrayList<File> initializeDirList(String rootPath) {
@@ -92,41 +54,20 @@ public class Main {
         }
         return rootDir;
     }
-
-
-    private static void complete() {
-
-        Scanner scanner = new Scanner(System.in);
-
-        System.out.println("Enter LinkedIn Learning Playlist Directory Path: ");
-        String basePath = scanner.nextLine();
-        System.out.println("Enter LinkedIn Learning Playlist URL: ");
-        String url = scanner.nextLine();
-
-        sortSingleDir(basePath, url);
-
-    }
-
-    private static boolean sortSingleDir(String basePath, String url) {
-        UpdateLLDir obj = new UpdateLLDir(basePath, url);
-        return obj.updateFileNames();
-    }
-
-    public static void main(String[] args) {
-        complete2();
-    }
+*/
 
 }
 
 /*
- *  Time Stamp: 26th March 2K19, 01:47 PM..!!
+ *  Time Stamp: 6th May 2K19, 06:36 PM..!!
  *
  *  Latest Updates:
+ *  1. Youtube Scraping support added for sorting Youtube Playlist Dirs.
+ *  2. sortSingleDir updated for Youtube as well as LinkedIn Learning Playlist.
+ *  3. Optimized entire project for better performance.
+ *
+ *  Change Log:
  *  1. sortSingleDir working fine.
  *  2. Pending: sortMultipleLLDirs.
  *
  */
-
-
-
-
