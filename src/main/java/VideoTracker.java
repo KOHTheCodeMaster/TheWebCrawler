@@ -22,35 +22,20 @@ public class VideoTracker {
 //        return "Video: " + getVideoName() + "\t\t\t\t\t\t\t|\tTime: " + getTimeLength();
     }
 
-    public String getVideoName() {
+    String getVideoName() {
         return videoName;
     }
 
-    public void setVideoName(String videoName) {
-        this.videoName = videoName;
-    }
-
-    public String getVideoUrl() {
+    private String getVideoUrl() {
         return videoUrl;
     }
 
-    public void setVideoUrl(String videoUrl) {
-        this.videoUrl = videoUrl;
-    }
-
-    public String getTimeLength() {
+    private String getTimeLength() {
         return timeLength;
     }
 
-    public void setTimeLength(String timeLength) {
-        this.timeLength = timeLength;
-    }
-
-    public int getSerialNumber() {
+    int getSerialNumber() {
         return serialNumber;
     }
 
-    public void setSerialNumber(int serialNumber) {
-        this.serialNumber = serialNumber;
-    }
 }

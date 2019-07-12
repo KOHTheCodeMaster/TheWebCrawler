@@ -26,10 +26,138 @@ public class A1 {
         System.out.println("Begin.\n");
 
         A1 obj = new A1();
-        obj.major();
+//        obj.major();
+
+        obj.strF1();
 
         System.out.println("\nEnd.\n");
 
+    }
+
+    private void strF1() {
+
+        String sF = "abc|xXyz";
+        String cF1 = "abcxXyz";
+//        String cF2 = "aaa = xyz";
+        String cF2 = "a";
+
+        String cF3 = "Java concurency : Synchronized keyword";
+        String cF4 = "Java concurency  Synchronized keyword";
+
+//        String sF2 = "Brothers Anthem - Akshay Kumar | Sidharth Malhotra";
+//        String cF5 = "Brothers Anthem - Akshay Kumar - Sidharth Malhotra - YouTube";
+        String sF2 = "Servlets and JSPs - Getting Your App On the Internet: Java Web Programming Part 7";
+        String cF5 = "Servlets and JSPs - Getting Your App On the Internet Java Web Programming Part 7";
+
+//        doesNamesMatch2(sF2, cF5);
+
+        System.out.println(doesNamesMatch2(cF3, cF4));
+//        System.out.println(doesNamesMatch2(sF2, cF5));
+//        String s3 = "A|Z";
+//        System.out.println(s3.replaceAll("[|]",""));
+//        doesNamesMatch2(sF, cF2);
+//        doesNamesMatch2(sF, cF3);
+//        doesNamesMatch2(sF, cF4);
+
+
+    }
+
+    /*
+        Time Stamp:
+
+     */
+    private boolean doesNamesMatch2(String scrapedFName, String currentFName) {
+
+        String regexChars = "[/\\\\:\"?<>*|]";
+        scrapedFName = scrapedFName.replaceAll(regexChars, "|");
+        int i = 0, i2 = 0, j2 = 0, j = 0;
+        int cLen = currentFName.length(), sLen = scrapedFName.length();
+
+//        System.out.println("cLen : " + cLen + " | sLen : " + sLen);
+//        System.out.println("c : " + currentFName + "\ns : " + scrapedFName);
+
+//        if(sLen > cLen) {
+//            System.out.println("============><><==================");
+//            return false;
+//        }
+
+        do {
+            //  Find index of '|' from j2 index, if not found then j2 = length of scrapedFName
+            j2 = scrapedFName.indexOf('|', j2);
+            if (j2 == -1) j2 = scrapedFName.length();
+
+            i2 = j2;
+            if (i2 > cLen)
+                i2--;
+
+            /*
+                Compare left side of both the strings,
+                starting from index i till next index of '|' i.e. j2
+                Return false if currentFName doesn't contains scrapedFName
+             */
+            if (!scrapedFName.substring(j, j2).equals(currentFName.substring(i, i2))
+//                    || currentFName.substring(j2, j2 + 1).matches("[a-zA-z0-9]")
+            ) {
+//                System.out.println(scrapedFName + " != " + currentFName);
+                return false;
+            }
+
+            //  Assign i to the immediate next char. of '|'
+            //  Increment the j2 to next char. pos.
+            i = j2;
+            j = j2 + 1;
+            j2++;
+
+            //  Repeat till j2 is smaller than the length of scrapedFName
+        } while (j2 < scrapedFName.length());
+
+//        String str = "1. " + scrapedFName.replaceAll(regexChars, "-");
+//        str += currentFName.substring(scrapedFName.length());
+//        System.out.println(str);
+
+        return true;
+    }
+
+    private boolean doesNamesMatch(String scrapedFName, String currentFName) {
+
+        String regexChars = "[/\\\\:\"?<>*|]";
+        scrapedFName = scrapedFName.replaceAll(regexChars, "|");
+        int i = 0, j = 0;
+        int cLen = currentFName.length(), sLen = scrapedFName.length();
+
+        if (sLen > cLen)
+            return false;
+
+        do {
+            //  Find index of '|' from j index, if not found then j = length of scrapedFName
+            j = scrapedFName.indexOf('|', j);
+            if (j == -1) j = scrapedFName.length();
+
+            /*
+                Compare left side of both the strings,
+                starting from index i till next index of '|' i.e. j
+                Return false if currentFName doesn't contains scrapedFName
+             */
+            if (!scrapedFName.substring(i, j).equals(currentFName.substring(i, j))
+//                    || currentFName.substring(j, j + 1).matches("[a-zA-z0-9]")
+            ) {
+                System.out.println(scrapedFName + " != " + currentFName);
+                return false;
+            }
+
+            //  Assign i to the immediate next char. of '|'
+            //  Increment the j to next char. pos.
+            i = j + 1;
+            j++;
+
+            //  Repeat till j is smaller than the length of scrapedFName
+        } while (j < scrapedFName.length());
+
+        String str = "1. " + scrapedFName.replaceAll(regexChars, "-");
+        str += currentFName.substring(scrapedFName.length());
+        System.out.println(str);
+
+        return true;
     }
 
     private void major() {

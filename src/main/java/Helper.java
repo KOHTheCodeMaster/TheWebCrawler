@@ -113,9 +113,9 @@ public class Helper {
             String url = urlList.get(i++);
 
             PlaylistSorter obj = new PlaylistSorter(basePath, url);
-            boolean success = obj.updateFileNames();
-            if (success) {
-                System.out.println(f.getName() + " Updated Successfully. [" + obj.fileCount + " Files]");
+            int filesRenamed = obj.updateFileNames();
+            if (filesRenamed != -1) {
+                System.out.println(f.getName() + " Updated Successfully. [" + filesRenamed + " Files]");
                 totalFileCount += obj.fileCount;
             } else {
                 System.out.println("Update Operation Failed...");

@@ -1,7 +1,7 @@
 import java.io.File;
 import java.util.ArrayList;
 
-public class PlaylistSorter {
+class PlaylistSorter {
 
     private String basePath;
     private String url;
@@ -9,6 +9,9 @@ public class PlaylistSorter {
     private ArrayList<VideoTracker> videoTrackers;
     int fileCount;
     private String urlCategory;
+    private static final String SPECIAL_CHAR_PIPE = "|";
+    private static final String regexChars = "[/\\\\:\"?<>*|]";
+
 
     PlaylistSorter(String basePath, String url) {
         this.basePath = basePath;
@@ -92,39 +95,169 @@ public class PlaylistSorter {
         }
     }
 
-    boolean updateFileNames() {
+    int updateFileNames() {
+
+        int successfulRenameCount = 0;
 
         for (VideoTracker v : videoTrackers) {
 
             String scrapedFName = v.getVideoName();
-            scrapedFName = replaceSpecialCharsWithHyphen(scrapedFName);
 
             for (File currentFile : fileList) {
                 String currentFileName = currentFile.getName();
 
-                //  Replace specific special chars. with '-'
-                currentFileName = replaceSpecialCharsWithHyphen(currentFileName);
-
                 /*
                     Match the currentFileName with the scrapedFName & when matched then
                     rename the currentFile in following format:
-                    serialNumber. scrapedFName .extension
+                    serialNumber. currentFileName.extension
+
+                    (Replace specific special chars. with '-')
                  */
-                if (currentFileName.contains(scrapedFName)) {
+
+                if (doesNamesMatch(scrapedFName, currentFileName)
+                        || doesNamesMatch2(scrapedFName, currentFileName.substring(0, currentFileName.lastIndexOf('.')))
+                ) {
                     String updatedFName = acquireCorrectFileName(v.getSerialNumber(),
-                            scrapedFName, currentFileName);
+                            scrapedFName, currentFileName.substring(currentFileName.lastIndexOf('.')));
                     boolean renamedSuccessfully = currentFile.renameTo(
                             new File(basePath + "/" + updatedFName));
-                    if (!renamedSuccessfully) {
-//                        System.out.println("Renaming Failed...");
-//                        System.exit(-207);
-                        return false;
+                    if (!renamedSuccessfully) return -1;
+                    else {
+                        successfulRenameCount++;
+                        break;
                     }
-                    break;
                 }
             }
 
         }
+        return successfulRenameCount;
+    }
+
+    /*
+        Time Stamp: 13th July 2K19, 00:06 AM..!!
+
+        Case: scrapedFName special chars. has been replaced by empty string char. i.e. "" in currentFName
+
+        Return true if currentFName contains scrapedFName substring
+        Matching is done in following way:
+            1. Initialize i, i2, j, j2 = 0
+            2. Find special chars. in scrapedFName & Store that pos. in j2    |   i2 = j2
+               if there ain't any special char. in the scrapedFName
+               then j2 = length of scrapedFName
+               & if i2 > length of currentFName,
+                    i2 = length of currentFName
+            3. Match currentFName substring from i to i2 & scrapedFName substring from j to j2
+               if not matched then returns false
+            4. i = j2   |   j = j2 + 1  |   j2 = j2 + 1
+            5. Repeat steps 2,3,4 while ( j < length of scrapedFName )
+            6. Return true
+
+        Example:
+            scrapedFName = "abc:xyz"
+            currentFName = "abcxyz"
+            returns true
+     */
+
+    private boolean doesNamesMatch2(String scrapedFName, String currentFName) {
+
+        String regexChars = "[/\\\\:\"?<>*|]";
+        scrapedFName = scrapedFName.replaceAll(regexChars, "|");
+        int i = 0, i2, j2 = 0, j = 0;
+        int cLen = currentFName.length(), sLen = scrapedFName.length();
+
+        do {
+            //  Find index of '|' from j2 index, if not found then j2 = length of scrapedFName
+            j2 = scrapedFName.indexOf('|', j2);
+            if (j2 == -1) j2 = sLen;
+
+            i2 = j2;
+            if (i2 > cLen)
+                i2 = cLen;
+
+            /*
+                Compare left side of both the strings,
+                starting from index i till next index of '|' i.e. j2
+                Return false if currentFName doesn't contains scrapedFName
+             */
+            if (!scrapedFName.substring(j, j2).equals(currentFName.substring(i, i2))
+//                    || currentFName.substring(j2, j2 + 1).matches("[a-zA-z0-9]")
+            ) {
+//                System.out.println(scrapedFName + " != " + currentFName);
+                return false;
+            }
+
+            //  Assign i to the immediate next char. of '|'
+            //  Increment the j2 to next char. pos.
+            i = j2;
+            j2++;
+            j = j2;
+
+            //  Repeat till j2 is smaller than the length of scrapedFName
+        } while (j2 < sLen);
+
+        return true;
+    }
+
+    /*
+    Time Stamp: 13th July 2K19, 00:18 AM..!!
+
+    Case: scrapedFName special chars. has been replaced by "-", " ", or any single char. in currentFName
+
+    Return true if currentFName contains scrapedFName substring
+    For this case, length of currentFName will always be greater than length of scrapedFName
+    if(sLen > cLen) return false;
+
+    Matching is done in following way:
+        1. Initialize i, j = 0
+        2. Find special chars. in scrapedFName & Store that pos. in j2    |   i2 = j2
+           if there ain't any special char. in the scrapedFName
+           then j = length of scrapedFName
+        3. Match currentFName substring from i to j & scrapedFName substring from i to j
+           if not matched then return false
+        4. i = j + 1   |   j = j + 1
+        5. Repeat steps 2,3,4 while ( j < length of scrapedFName )
+        6. Return true
+
+    Example:
+        scrapedFName = "abc:xyz"
+        currentFName = "abc xyz"
+        returns true
+ */
+    private boolean doesNamesMatch(String scrapedFName, String currentFName) {
+
+        int cLen = currentFName.length(), sLen = scrapedFName.length();
+        if (sLen > cLen) return false;
+
+        String regexChars = "[/\\\\:\"?<>*|]";
+        scrapedFName = scrapedFName.replaceAll(regexChars, "|");
+        int i = 0, j = 0;
+
+
+        do {
+            //  Find index of '|' from j index, if not found then j = length of scrapedFName
+            j = scrapedFName.indexOf('|', j);
+            if (j == -1) j = sLen;
+
+            /*
+                Compare left side of both the strings,
+                starting from index i till next index of '|' i.e. j
+                Return false if currentFName doesn't contains scrapedFName
+             */
+            if (!scrapedFName.substring(i, j).equals(currentFName.substring(i, j))
+//                    || currentFName.substring(j, j + 1).matches("[a-zA-z0-9]")
+            ) {
+//                System.out.println(scrapedFName + " != " + currentFName);
+                return false;
+            }
+
+            //  Assign i to the immediate next char. of '|'
+            //  Increment the j to next char. pos.
+            j++;
+            i = j;
+
+            //  Repeat till j is smaller than the length of scrapedFName
+        } while (j < sLen);
+
         return true;
     }
 
@@ -133,26 +266,22 @@ public class PlaylistSorter {
         String updatedFName = "";
 //        String regexSpecialSymbolFilter = "[\\-/\\\\:\"?<>*|]";
         String regexSpecialSymbolFilter = "[/\\\\:\"?<>*|]";
-        updatedFName = fName.replaceAll(regexSpecialSymbolFilter, "");
+        updatedFName = fName.replaceAll(regexSpecialSymbolFilter, PlaylistSorter.SPECIAL_CHAR_PIPE);
         return updatedFName;
     }
 
-    private String acquireCorrectFileName(int serialNumber, String scrapedFName, String currentFileName) {
+    private String acquireCorrectFileName(int serialNumber, String scrapedFName, String extension) {
+
+//        StringBuilder result = new StringBuilder();
+//        result.append(serialNumber).append(". ").append(scrapedFName).append(extension);
+
         String result;
 
         result = serialNumber + ". ";
-        result += scrapedFName;
-        String extension = extractExtension(currentFileName);
+        result += scrapedFName.replaceAll(regexChars, "-");
         result += extension;
 
-//        System.out.println("Result : " + result);
         return result;
-    }
-
-    private String extractExtension(String currentFileName) {
-
-        //  Pending: Handle invalid Extension check.
-        return currentFileName.substring(currentFileName.lastIndexOf("."));
     }
 
 /*

@@ -6,19 +6,14 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class Scraper {
+class Scraper {
 
     private String url;
     private String urlCategory;
     private ArrayList<VideoTracker> videoList;
 
-    public Scraper(String url) {
-        this.url = url;
-        this.urlCategory = Scraper.extractUrlCategory(url);
-        this.videoList = new ArrayList<>();
-    }
 
-    public Scraper(String url, String urlCategory) {
+    Scraper(String url, String urlCategory) {
         this.url = url;
         this.urlCategory = urlCategory;
         this.videoList = new ArrayList<>();
@@ -37,7 +32,7 @@ public class Scraper {
         return urlCategory;
     }
 
-    public boolean scrapPlaylist() {
+    boolean scrapPlaylist() {
 
         /*
             Time Stamp: 6th May 2K19, 09:46 AM..!!
@@ -47,7 +42,7 @@ public class Scraper {
          */
 
         Document document = initializeDocument();
-        int count = 0;  //  Total Number of Videos Count.
+        int count;  //  Total Number of Videos Count.
 
         //  Instantiating Lists for keeping track of title, time length, url & serial number of each video.
         ArrayList<String> titleList = new ArrayList<>();
@@ -169,7 +164,7 @@ public class Scraper {
         return count;
     }
 
-    public ArrayList<VideoTracker> getVideoList() {
+    ArrayList<VideoTracker> getVideoList() {
         return videoList;
     }
 }
